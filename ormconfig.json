@@ -1,0 +1,14 @@
+{
+   "type": "postgres",
+   "host": "localhost",
+   "port": 5432,
+   "username": "postgres",
+   "password": "rootadmin",
+   "database": "socialmedia",
+   "entities": ["dist/entities/**/*.js"],
+   "migrationsTableName": "custom_migration_table",
+    "migrations": ["dist/migration/*.js"],
+    "cli": {
+        "migrationsDir": "src/migration"
+    }
+ }
