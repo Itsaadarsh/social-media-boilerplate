@@ -5,6 +5,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { PostResolver } from './resolvers/post';
 import { HelloResolver } from './resolvers/hello';
+import { UserResolver } from './resolvers/user';
 
 const main = async () => {
   try {
@@ -14,16 +15,15 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
       schema: await buildSchema({
-        resolvers: [HelloResolver, PostResolver],
+        resolvers: [HelloResolver, PostResolver, UserResolver],
         validate: false,
-        skipCheck: true,
       }),
     });
 
     apolloServer.applyMiddleware({ app });
 
-    app.listen(4000, () => {
-      console.log('Server Started at http://localhost:4000/graphql');
+    app.listen(4001, () => {
+      console.log('Server Started at http://localhost:4001/graphql');
     });
   } catch (err) {
     console.error(err);
