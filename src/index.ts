@@ -4,8 +4,11 @@ import { createConnection } from 'typeorm';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { PostResolver } from './resolvers/post';
-import { HelloResolver } from './resolvers/hello';
 import { UserResolver } from './resolvers/user';
+import redis from 'redis';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import { MyContext } from './utils/types';
 
 const main = async () => {
   try {
@@ -13,17 +16,37 @@ const main = async () => {
     console.log('Database successfully connected');
     const app = express();
 
+    const RedisStore = connectRedis(session);
+    const redisClient = redis.createClient();
+
+    app.use(
+      session({
+        name: 'rid',
+        store: new RedisStore({ client: redisClient, disableTouch: true }),
+        cookie: {
+          maxAge: 1000 * 60 * 60 * 24 * 365 * 20, // 2 Years
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+        },
+        saveUninitialized: false,
+        secret: 'v45879v7985bakl33',
+        resave: false,
+      })
+    );
+
     const apolloServer = new ApolloServer({
       schema: await buildSchema({
-        resolvers: [HelloResolver, PostResolver, UserResolver],
+        resolvers: [PostResolver, UserResolver],
         validate: false,
       }),
+      context: ({ req, res }): MyContext => ({ req, res }),
     });
 
     apolloServer.applyMiddleware({ app });
 
-    app.listen(4001, () => {
-      console.log('Server Started at http://localhost:4001/graphql');
+    app.listen(4000, () => {
+      console.log('Server Started at http://localhost:4000/graphql');
     });
   } catch (err) {
     console.error(err);
