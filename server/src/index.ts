@@ -5,10 +5,10 @@ import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
+import { MyContext } from './utils/types';
 import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import { MyContext } from './utils/types';
 
 const main = async () => {
   try {
