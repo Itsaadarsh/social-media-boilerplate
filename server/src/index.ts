@@ -9,6 +9,7 @@ import { MyContext } from './utils/types';
 import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
+import cors from 'cors';
 
 const main = async () => {
   try {
@@ -18,6 +19,13 @@ const main = async () => {
 
     const RedisStore = connectRedis(session);
     const redisClient = redis.createClient();
+
+    app.use(
+      cors({
+        origin: 'http://localhost:3000',
+        credentials: true,
+      })
+    );
 
     app.use(
       session({
@@ -43,7 +51,7 @@ const main = async () => {
       context: ({ req, res }): MyContext => ({ req, res }),
     });
 
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(4000, () => {
       console.log('Server Started at http://localhost:4000/graphql');
