@@ -23,7 +23,6 @@ export type Query = {
   me?: Maybe<User>;
 };
 
-
 export type QueryPostArgs = {
   id: Scalars['Float'];
 };
@@ -35,7 +34,6 @@ export type Post = {
   createdAt: Scalars['DateTime'];
   updatedAt: Scalars['DateTime'];
 };
-
 
 export type User = {
   __typename?: 'User';
@@ -54,28 +52,23 @@ export type Mutation = {
   login: UserResponse;
 };
 
-
 export type MutationCreatePostArgs = {
   title: Scalars['String'];
 };
-
 
 export type MutationUpdatePostArgs = {
   title: Scalars['String'];
   id: Scalars['Float'];
 };
 
-
 export type MutationDeletePostArgs = {
   id: Scalars['Float'];
 };
-
 
 export type MutationRegisterArgs = {
   password: Scalars['String'];
   username: Scalars['String'];
 };
-
 
 export type MutationLoginArgs = {
   password: Scalars['String'];
@@ -99,39 +92,62 @@ export type Unnamed_1_MutationVariables = Exact<{
   password: Scalars['String'];
 }>;
 
+export type Unnamed_1_Mutation = { __typename?: 'Mutation' } & {
+  login: { __typename?: 'UserResponse' } & {
+    errors?: Maybe<Array<{ __typename?: 'FieldError' } & Pick<FieldError, 'field' | 'message'>>>;
+    user?: Maybe<{ __typename?: 'User' } & Pick<User, 'id' | 'username' | 'createdAt' | 'updatedAt'>>;
+  };
+};
 
-export type Unnamed_1_Mutation = (
-  { __typename?: 'Mutation' }
-  & { register: (
-    { __typename?: 'UserResponse' }
-    & { errors?: Maybe<Array<(
-      { __typename?: 'FieldError' }
-      & Pick<FieldError, 'field' | 'message'>
-    )>>, user?: Maybe<(
-      { __typename?: 'User' }
-      & Pick<User, 'id' | 'username' | 'createdAt' | 'updatedAt'>
-    )> }
-  ) }
-);
+export type Unnamed_2_MutationVariables = Exact<{
+  username: Scalars['String'];
+  password: Scalars['String'];
+}>;
 
+export type Unnamed_2_Mutation = { __typename?: 'Mutation' } & {
+  register: { __typename?: 'UserResponse' } & {
+    errors?: Maybe<Array<{ __typename?: 'FieldError' } & Pick<FieldError, 'field' | 'message'>>>;
+    user?: Maybe<{ __typename?: 'User' } & Pick<User, 'id' | 'username' | 'createdAt' | 'updatedAt'>>;
+  };
+};
 
-export const Document = gql`
-    mutation ($username: String!, $password: String!) {
-  register(password: $password, username: $username) {
-    errors {
-      field
-      message
-    }
-    user {
-      id
-      username
-      createdAt
-      updatedAt
+export const LoginDocument = gql`
+  mutation($username: String!, $password: String!) {
+    login(password: $password, username: $username) {
+      errors {
+        field
+        message
+      }
+      user {
+        id
+        username
+        createdAt
+        updatedAt
+      }
     }
   }
-}
-    `;
+`;
 
-export function useMutation() {
-  return Urql.useMutation<Mutation, MutationVariables>(Document);
-};
+export function useLoginMutation() {
+  return Urql.useMutation<Mutation, MutationVariables>(LoginDocument);
+}
+export const RegisterDocument = gql`
+  mutation($username: String!, $password: String!) {
+    register(password: $password, username: $username) {
+      errors {
+        field
+        message
+      }
+      user {
+        id
+        username
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;
+
+export function useRegisterMutation() {
+  return Urql.useMutation<Mutation, MutationVariables>(RegisterDocument);
+}
