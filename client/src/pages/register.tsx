@@ -7,25 +7,24 @@ import { Button } from '@chakra-ui/button';
 import { useRegisterMutation } from '../generated/graphql';
 import { errorMap } from '../utils/errosMap';
 import { useRouter } from 'next/router';
+
 interface registerProps {}
+
 const Register: React.FC<registerProps> = ({}) => {
   const [, register] = useRegisterMutation();
   const router = useRouter();
-
+  const registerForm = async (values, { setErrors }) => {
+    const response = await register(values);
+    if (response.data.register.errors) {
+      setErrors(errorMap(response.data.register.errors));
+    } else if (response.data.register.user) {
+      router.push('/');
+    }
+  };
   return (
     <Wrapper varient='small'>
       Register
-      <Formik
-        initialValues={{ username: '', password: '' }}
-        onSubmit={async (values, { setErrors }) => {
-          const response = await register(values);
-          if (response.data.register.errors) {
-            setErrors(errorMap(response.data.register.errors));
-          } else if (response.data.register.user) {
-            router.push('/');
-          }
-        }}
-      >
+      <Formik initialValues={{ username: '', password: '' }} onSubmit={registerForm}>
         {({ isSubmitting }) => (
           <Form>
             <InputField name='username' placeholder='username' label='Username' />

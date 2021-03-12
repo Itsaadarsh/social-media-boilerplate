@@ -7,25 +7,24 @@ import { Button } from '@chakra-ui/button';
 import { useLoginMutation } from '../generated/graphql';
 import { errorMap } from '../utils/errosMap';
 import { useRouter } from 'next/router';
+
 interface loginProps {}
+
 const Login: React.FC<loginProps> = ({}) => {
   const [, login] = useLoginMutation();
   const router = useRouter();
-
+  const loginForm = async (values, { setErrors }) => {
+    const response = await login(values);
+    if (response.data.login.errors) {
+      setErrors(errorMap(response.data.login.errors));
+    } else if (response.data.login.user) {
+      router.push('/');
+    }
+  };
   return (
     <Wrapper varient='small'>
       Login
-      <Formik
-        initialValues={{ username: '', password: '' }}
-        onSubmit={async (values, { setErrors }) => {
-          const response = await login(values);
-          if (response.data.login.errors) {
-            setErrors(errorMap(response.data.login.errors));
-          } else if (response.data.login.user) {
-            router.push('/');
-          }
-        }}
-      >
+      <Formik initialValues={{ username: '', password: '' }} onSubmit={loginForm}>
         {({ isSubmitting }) => (
           <Form>
             <InputField name='username' placeholder='username' label='Username' />
