@@ -1,16 +1,16 @@
 import 'reflect-metadata';
-import express from 'express';
-import { createConnection } from 'typeorm';
-import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
-import { PostResolver } from './resolvers/post';
-import { UserResolver } from './resolvers/user';
-import { MyContext } from './utils/types';
-import redis from 'redis';
-import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
+import express from 'express';
+import session from 'express-session';
+import { ApolloServer } from 'apollo-server-express';
+import { buildSchema } from 'type-graphql';
+import { createConnection } from 'typeorm';
+import { PostResolver } from './resolvers/post';
+import { UserResolver } from './resolvers/user';
 import { COOKIE_NAME } from './utils/constants';
+import { MyContext } from './utils/types';
+import Redis from 'ioredis';
 
 const main = async () => {
   try {
@@ -19,8 +19,9 @@ const main = async () => {
     const app = express();
 
     const RedisStore = connectRedis(session);
-    const redisClient = redis.createClient();
+    const redis = new Redis();
 
+    redis.get;
     app.use(
       cors({
         origin: 'http://localhost:3000',
@@ -31,7 +32,7 @@ const main = async () => {
     app.use(
       session({
         name: COOKIE_NAME,
-        store: new RedisStore({ client: redisClient, disableTouch: true }),
+        store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 365 * 20, // 2 Years
           httpOnly: true,
@@ -49,7 +50,7 @@ const main = async () => {
         resolvers: [PostResolver, UserResolver],
         validate: false,
       }),
-      context: ({ req, res }): MyContext => ({ req, res }),
+      context: ({ req, res }): MyContext => ({ req, res, redis }),
     });
 
     apolloServer.applyMiddleware({ app, cors: false });

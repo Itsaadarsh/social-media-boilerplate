@@ -4,20 +4,20 @@ import NextLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
 import { Button } from '@chakra-ui/button';
 import { useRouter } from 'next/router';
+import { isServer } from '../utils/isServer';
 
 interface NavbarProps {}
 
 export const Navbar: React.FC<NavbarProps> = ({}) => {
-  const [{ data, fetching }] = useMeQuery();
+  const [{ data, fetching }] = useMeQuery({ pause: isServer() });
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
-  const router = useRouter();
   const logoutBtn = async () => {
     await logout();
   };
 
   let response = null;
   if (fetching) {
-  } else if (!data.me) {
+  } else if (!data?.me) {
     response = (
       <>
         <NextLink href='/login'>
@@ -33,7 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({}) => {
   } else {
     response = (
       <Flex>
-        <Box mr={4}>{data.me.username}</Box>
+        <Box mr={4}>{data?.me.username}</Box>
         <Button variant='link' onClick={logoutBtn} isLoading={logoutFetching}>
           LOGOUT
         </Button>

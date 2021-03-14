@@ -3,7 +3,8 @@ import { User } from '../entities/User';
 import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from 'type-graphql';
 import { MyContext } from 'src/utils/types';
 import { COOKIE_NAME } from '../utils/constants';
-
+import sendEmail from '../utils/sendEmail';
+import { v4 } from 'uuid';
 @ObjectType()
 class UserResponse {
   @Field(() => [FieldError], { nullable: true })
@@ -33,10 +34,24 @@ export class UserResolver {
     return user;
   }
 
+  @Mutation(() => Boolean)
+  async forgotpassword(@Arg('email') email: string, @Ctx() { redis }: MyContext) {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return false;
+    }
+    const token = v4();
+    await redis.set(process.env.FORGET_PASSWORD + token, user.id, 'ex', 1000 * 60 * 60 * 24 * 3);
+    await sendEmail(email, `<a href='http://localhost:3000/forgotpassword/${token}'></a>`);
+
+    return true;
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg('username') username: string,
     @Arg('password') password: string,
+    @Arg('email') email: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     if (username.length <= 2) {
@@ -64,15 +79,14 @@ export class UserResolver {
     try {
       const hashedPassword = await argon2.hash(password);
 
-      const user = await User.create({
-        username,
-        password: hashedPassword,
-      }).save();
+      const user = await User.create({ email, username, password: hashedPassword }).save();
 
       req.session.userID = user.id;
 
       return { user };
     } catch (err) {
+      console.log(err.message);
+
       if (err.code === '23505' || err.detail.includes('already exists')) {
         return {
           errors: [
