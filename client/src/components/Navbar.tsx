@@ -3,7 +3,6 @@ import React from 'react';
 import NextLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
 import { Button } from '@chakra-ui/button';
-import { useRouter } from 'next/router';
 import { isServer } from '../utils/isServer';
 
 interface NavbarProps {}

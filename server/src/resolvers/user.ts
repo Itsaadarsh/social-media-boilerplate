@@ -63,7 +63,9 @@ export class UserResolver {
         ],
       };
     }
-    const userID = await redis.get(process.env.FORGET_PASSWORD + token);
+
+    const redisKey = process.env.FORGET_PASSWORD + token;
+    const userID = await redis.get(redisKey);
     if (!userID) {
       return {
         errors: [
@@ -90,6 +92,7 @@ export class UserResolver {
     const hashedPassword = await argon2.hash(password);
     user.password = hashedPassword;
     await user.save();
+    await redis.del(redisKey);
     req.session.userID = user.id;
     return { user };
   }
@@ -123,6 +126,17 @@ export class UserResolver {
       };
     }
 
+    if (!email.includes('@')) {
+      return {
+        errors: [
+          {
+            field: 'email',
+            message: 'invalid email',
+          },
+        ],
+      };
+    }
+
     try {
       const hashedPassword = await argon2.hash(password);
 
@@ -132,9 +146,7 @@ export class UserResolver {
 
       return { user };
     } catch (err) {
-      console.log(err.message);
-
-      if (err.code === '23505' || err.detail.includes('already exists')) {
+      if (err.detail.includes('Key (username)')) {
         return {
           errors: [
             {
@@ -144,6 +156,17 @@ export class UserResolver {
           ],
         };
       }
+      if (err.detail.includes('Key (email)')) {
+        return {
+          errors: [
+            {
+              field: 'email',
+              message: 'email already exists',
+            },
+          ],
+        };
+      }
+
       return {};
     }
   }

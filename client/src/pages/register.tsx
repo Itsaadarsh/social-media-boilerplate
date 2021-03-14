@@ -17,8 +17,6 @@ const Register: React.FC<registerProps> = ({}) => {
   const router = useRouter();
   const registerForm = async (values, { setErrors }) => {
     const response = await register(values);
-    console.log(response.data.register);
-
     if (response.data.register.errors) {
       setErrors(errorMap(response.data.register.errors));
     } else if (response.data.register.user) {
