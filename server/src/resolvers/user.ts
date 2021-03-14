@@ -48,6 +48,53 @@ export class UserResolver {
   }
 
   @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg('token') token: string,
+    @Arg('password') password: string,
+    @Ctx() { redis, req }: MyContext
+  ): Promise<UserResponse> {
+    if (password.length <= 5) {
+      return {
+        errors: [
+          {
+            field: 'newPassword',
+            message: 'password should be greater than 5 characters',
+          },
+        ],
+      };
+    }
+    const userID = await redis.get(process.env.FORGET_PASSWORD + token);
+    if (!userID) {
+      return {
+        errors: [
+          {
+            field: 'token',
+            message: 'your token is expired',
+          },
+        ],
+      };
+    }
+
+    const user = await User.findOne(userID);
+
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: 'usersID',
+            message: 'user not found',
+          },
+        ],
+      };
+    }
+    const hashedPassword = await argon2.hash(password);
+    user.password = hashedPassword;
+    await user.save();
+    req.session.userID = user.id;
+    return { user };
+  }
+
+  @Mutation(() => UserResponse)
   async register(
     @Arg('username') username: string,
     @Arg('password') password: string,

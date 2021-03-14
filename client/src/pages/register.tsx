@@ -17,6 +17,8 @@ const Register: React.FC<registerProps> = ({}) => {
   const router = useRouter();
   const registerForm = async (values, { setErrors }) => {
     const response = await register(values);
+    console.log(response.data.register);
+
     if (response.data.register.errors) {
       setErrors(errorMap(response.data.register.errors));
     } else if (response.data.register.user) {
@@ -32,6 +34,9 @@ const Register: React.FC<registerProps> = ({}) => {
             <InputField name='username' placeholder='username' label='Username' />
             <Box mt={4}>
               <InputField name='password' placeholder='password' label='Password' type='password' />
+            </Box>
+            <Box mt={4}>
+              <InputField name='email' placeholder='email' label='Email' type='text' />
             </Box>
             <Button mt={4} isLoading={isSubmitting} type='submit' color='unset' backgroundColor='teal'>
               Register
