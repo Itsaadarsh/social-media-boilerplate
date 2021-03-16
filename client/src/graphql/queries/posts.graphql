@@ -5,7 +5,10 @@ query Posts($limit:Int!,$cursor:String) {
   ){
     id
     title
-    createdAt
+    textSnippet
+    points
+    creatorID
     updatedAt
+    createdAt
   }
 }
