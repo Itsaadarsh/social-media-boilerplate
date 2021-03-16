@@ -1,14 +1,28 @@
 import { Post } from "../entities/Post";
-import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { Arg, Ctx, Int, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { MyContext } from "../utils/types";
 import { isAuth } from "../middleware/isAuth";
+import { getConnection } from "typeorm";
 
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  posts() {
-    const posts = Post.find({});
-    return posts;
+  async posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+  ) {
+    const realLimit = Math.min(50, limit);
+    const qb = getConnection()
+      .getRepository(Post)
+      .createQueryBuilder("p")
+      .orderBy('"createdAt"', "DESC")
+      .take(realLimit);
+
+    if (cursor) {
+      qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+    }
+
+    return qb.getMany();
   }
 
   @Query(() => Post, { nullable: true })

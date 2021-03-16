@@ -1,9 +1,10 @@
-import { Box, Flex, Link } from '@chakra-ui/layout';
-import React from 'react';
-import NextLink from 'next/link';
-import { useLogoutMutation, useMeQuery } from '../generated/graphql';
-import { Button } from '@chakra-ui/button';
-import { isServer } from '../utils/isServer';
+import { Box, Flex, Link } from "@chakra-ui/layout";
+import React from "react";
+import NextLink from "next/link";
+import { useLogoutMutation, useMeQuery } from "../generated/graphql";
+import { Button } from "@chakra-ui/button";
+import { isServer } from "../utils/isServer";
+import { useRouter } from "next/router";
 
 interface NavbarProps {}
 
@@ -13,19 +14,19 @@ export const Navbar: React.FC<NavbarProps> = ({}) => {
   const logoutBtn = async () => {
     await logout();
   };
-
+  const router = useRouter();
   let response = null;
   if (fetching) {
   } else if (!data?.me) {
     response = (
       <>
-        <NextLink href='/login'>
-          <Link color='white' mr={2}>
+        <NextLink href="/login">
+          <Link color="white" mr={2}>
             LOGIN
           </Link>
         </NextLink>
-        <NextLink href='/register'>
-          <Link color='white'>REGISTER</Link>
+        <NextLink href="/register">
+          <Link color="white">REGISTER</Link>
         </NextLink>
       </>
     );
@@ -33,15 +34,22 @@ export const Navbar: React.FC<NavbarProps> = ({}) => {
     response = (
       <Flex>
         <Box mr={4}>{data?.me.username}</Box>
-        <Button variant='link' onClick={logoutBtn} isLoading={logoutFetching}>
+        {router.pathname !== "/createpost" ? (
+          <NextLink href="/createpost">
+            <Link color="white" mr={4}>
+              CREATE POST
+            </Link>
+          </NextLink>
+        ) : null}
+        <Button variant="link" onClick={logoutBtn} isLoading={logoutFetching}>
           LOGOUT
         </Button>
       </Flex>
     );
   }
   return (
-    <Flex bg='tomato' p={4} ml={'auto'}>
-      <Box ml={'auto'}>{response}</Box>
+    <Flex bg="tomato" p={4} ml={"auto"}>
+      <Box ml={"auto"}>{response}</Box>
     </Flex>
   );
 };

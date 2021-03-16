@@ -1,21 +1,22 @@
-import 'reflect-metadata';
-import connectRedis from 'connect-redis';
-import cors from 'cors';
-import express from 'express';
-import session from 'express-session';
-import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
-import { createConnection } from 'typeorm';
-import { PostResolver } from './resolvers/post';
-import { UserResolver } from './resolvers/user';
-import { COOKIE_NAME } from './utils/constants';
-import { MyContext } from './utils/types';
-import Redis from 'ioredis';
+import "reflect-metadata";
+import connectRedis from "connect-redis";
+import cors from "cors";
+import express from "express";
+import session from "express-session";
+import { ApolloServer } from "apollo-server-express";
+import { buildSchema } from "type-graphql";
+import { createConnection } from "typeorm";
+import { PostResolver } from "./resolvers/post";
+import { UserResolver } from "./resolvers/user";
+import { COOKIE_NAME } from "./utils/constants";
+import { MyContext } from "./utils/types";
+import Redis from "ioredis";
 
 const main = async () => {
   try {
     await createConnection();
-    console.log('Database successfully connected');
+    // await ORMConn.runMigrations();
+    console.log("Database successfully connected");
     const app = express();
 
     const RedisStore = connectRedis(session);
@@ -24,7 +25,7 @@ const main = async () => {
     redis.get;
     app.use(
       cors({
-        origin: 'http://localhost:3000',
+        origin: "http://localhost:3000",
         credentials: true,
       })
     );
@@ -36,11 +37,11 @@ const main = async () => {
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 365 * 20, // 2 Years
           httpOnly: true,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
         },
         saveUninitialized: false,
-        secret: 'v45879v7985bakl33',
+        secret: "v45879v7985bakl33",
         resave: false,
       })
     );
@@ -56,7 +57,7 @@ const main = async () => {
     apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(4000, () => {
-      console.log('Server Started at http://localhost:4000/graphql');
+      console.log("Server Started at http://localhost:4000/graphql");
     });
   } catch (err) {
     console.error(err);
