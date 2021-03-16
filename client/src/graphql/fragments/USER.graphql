@@ -2,4 +2,6 @@ fragment USER on User {
   id
   username
   email
+  createdAt
+  updatedAt
 }

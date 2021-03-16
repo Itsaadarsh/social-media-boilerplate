@@ -1,5 +1,7 @@
-import { Post } from '../entities/Post';
-import { Arg, Mutation, Query, Resolver } from 'type-graphql';
+import { Post } from "../entities/Post";
+import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { MyContext } from "../utils/types";
+import { isAuth } from "../middleware/isAuth";
 
 @Resolver()
 export class PostResolver {
@@ -10,19 +12,20 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg('id') id: number) {
+  post(@Arg("id") id: number) {
     const post = Post.findOne({ where: { id } });
     return post;
   }
 
   @Mutation(() => Post)
-  async createPost(@Arg('title') title: string) {
-    const post = Post.create({ title }).save();
+  @UseMiddleware(isAuth)
+  async createPost(@Arg("title") title: string, @Arg("text") text: string, @Ctx() { req }: MyContext) {
+    const post = Post.create({ title, creatorID: req.session.userID, text }).save();
     return post;
   }
 
   @Mutation(() => Post, { nullable: true })
-  async updatePost(@Arg('id') id: number, @Arg('title') title: string) {
+  async updatePost(@Arg("id") id: number, @Arg("title") title: string) {
     const isPost = await Post.findOne(id);
     if (!isPost) {
       return null;
@@ -35,7 +38,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg('id') id: number) {
+  async deletePost(@Arg("id") id: number) {
     const post = await Post.delete(id);
     if (post.affected === 1) {
       return true;
