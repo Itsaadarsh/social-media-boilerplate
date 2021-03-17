@@ -1,16 +1,18 @@
 import { Button } from "@chakra-ui/button";
 import { Box, Heading, Stack, Text } from "@chakra-ui/layout";
 import { withUrqlClient } from "next-urql";
+import { useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { usePostsQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
-  const [{ data, fetching }] = usePostsQuery({ variables: { limit: 10 } });
-
+  const [variables, setVariables] = useState({ limit: 10, cursor: null as null | string });
+  const [{ data, fetching }] = usePostsQuery({ variables });
   if (!data && !fetching) {
     return <div>No post found</div>;
   }
+
   return (
     <>
       <Navbar />
@@ -25,7 +27,20 @@ const Index = () => {
               <Text mt={4}>{post.textSnippet}</Text>
             </Box>
           ))}
-          <Button mt={4} color="whatsapp.400" fontSize={"3xl"} backgroundColor="tomato" m={6}>
+          <Button
+            mt={4}
+            color="whatsapp.400"
+            fontSize={"3xl"}
+            backgroundColor="tomato"
+            m={6}
+            onClick={() => {
+              setVariables({
+                limit: variables.limit,
+                cursor: data.posts[data.posts.length - 1].createdAt,
+              });
+            }}
+            isLoading={fetching}
+          >
             LOAD MORE
           </Button>
         </Stack>
