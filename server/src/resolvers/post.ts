@@ -42,34 +42,21 @@ export class PostResolver {
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
     }
-    // const posts = await getConnection().query(
-    //   `
 
-    // select p.*,
-    // json_build_object('id', u.id,'username', u.username,'email', u.email) creator
-    // from post p
-    // inner join users u on u.id = p."creatorID"
-    // ${cursor ? 'where p."createdAt" < $2' : ''}
-    // order by p."createdAt" DESC
-    // limit $1
-    // `,
-    //   replacements
-    // );
+    const posts = await getConnection().query(
+      `
+      SELECT post.id, post.title,post.text,post.points,post."createdAt",post."updatedAt",post."creatorID",
+      json_build_object('id',public.user.id,'username',public.user.username,'email',public.user.email) creator
+      FROM post
+      INNER JOIN public.user ON post."creatorID" = public.user.id
+      ${cursor ? `WHERE post."createdAt" < $2` : ''}
+      ORDER BY post."createdAt" DESC
+      limit $1
+    `,
+      replacements
+    );
 
-    // console.log(posts);
-    const qb = getConnection()
-      .getRepository(Post)
-      .createQueryBuilder('p')
-      .orderBy('"createdAt"', 'DESC')
-      .take(realLimit);
-
-    if (cursor) {
-      qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
-    }
-
-    const posts = await qb.getMany();
-
-    return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimit };
+    return { posts: posts, hasMore: posts.length === realLimit + 1 };
   }
 
   @Query(() => Post, { nullable: true })

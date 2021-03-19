@@ -12,7 +12,6 @@ const Index = () => {
   if (!data && !fetching) {
     return <div>No post found</div>;
   }
-  console.log(data.posts.hasMore);
 
   return (
     <>
@@ -25,6 +24,7 @@ const Index = () => {
           {data.posts.posts.map(post => (
             <Box key={post.id} p={5} shadow='md' borderWidth='1px'>
               <Heading fontSize='xl'>{post.title}</Heading>
+              <Text mt={4}>{post.creator.username}</Text>
               <Text mt={4}>{post.textSnippet}</Text>
             </Box>
           ))}
