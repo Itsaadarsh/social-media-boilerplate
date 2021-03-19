@@ -106,4 +106,27 @@ export class PostResolver {
     }
     return false;
   }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg('postID', () => Int) postID: number,
+    @Arg('value', () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const isUpvote = value !== -1;
+    const realValue = isUpvote ? 1 : -1;
+    const { userID } = req.session;
+    await getConnection().query(
+      `
+      START TRANSACTION;
+
+      INSERT INTO upvote ("userId", "postId", value) values (${userID},${postID},${realValue});
+      UPDATE post SET points = points + ${realValue} WHERE id = ${postID};
+
+      COMMIT;
+      `
+    );
+    return true;
+  }
 }

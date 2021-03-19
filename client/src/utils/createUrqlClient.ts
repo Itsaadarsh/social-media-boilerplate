@@ -98,7 +98,7 @@ export const cursorPagination = (): Resolver => {
 };
 
 export const createUrqlClient = (ssrExchange: any) => ({
-  url: 'http://localhost:4003/graphql',
+  url: 'http://localhost:4000/graphql',
   fetchOptions: {
     credentials: 'include' as const,
   },

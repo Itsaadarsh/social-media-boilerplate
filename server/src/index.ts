@@ -57,8 +57,8 @@ const main = async () => {
 
     apolloServer.applyMiddleware({ app, cors: false });
 
-    app.listen(4003, () => {
-      console.log('Server Started at http://localhost:4003/graphql');
+    app.listen(4000, () => {
+      console.log('Server Started at http://localhost:4000/graphql');
     });
   } catch (err) {
     console.error(err);
