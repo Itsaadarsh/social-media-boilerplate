@@ -1,6 +1,6 @@
-import { Cache, cacheExchange, QueryInput, Resolver } from "@urql/exchange-graphcache";
-import { dedupExchange, fetchExchange, stringifyVariables } from "urql";
-import { LoginMutation, LogoutMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
+import { Cache, cacheExchange, QueryInput, Resolver } from '@urql/exchange-graphcache';
+import { dedupExchange, fetchExchange, stringifyVariables } from 'urql';
+import { LoginMutation, LogoutMutation, MeDocument, MeQuery, RegisterMutation } from '../generated/graphql';
 
 function updateQuery<Result, Query>(
   cache: Cache,
@@ -11,7 +11,7 @@ function updateQuery<Result, Query>(
   return cache.updateQuery(qi, data => fn(result, data as any) as any);
 }
 
-export type MergeMode = "before" | "after";
+export type MergeMode = 'before' | 'after';
 
 export interface PaginationParams {
   cursorArgument?: string;
@@ -28,14 +28,27 @@ export const cursorPagination = (): Resolver => {
     if (size === 0) {
       return undefined;
     }
-    const isCacheAvai = cache.resolveFieldByKey(entityKey, `${fieldName}(${stringifyVariables(fieldArgs)})`);
+    const isCacheAvai = cache.resolve(
+      cache.resolveFieldByKey(entityKey, `${fieldName}(${stringifyVariables(fieldArgs)})`) as string,
+      'posts'
+    );
     info.partial = !isCacheAvai;
     const results = [];
+    let hasMore = true;
     fieldInfos.forEach(fi => {
-      const data = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string[];
+      const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string;
+      const data = cache.resolve(key, 'posts') as string[];
+      const _hasMore = cache.resolve(key, 'hasMore');
+      if (!_hasMore) {
+        hasMore = _hasMore as boolean;
+      }
       results.push(...data);
     });
-    return results;
+    return {
+      __typename: 'PaginatedPost',
+      hasMore,
+      posts: results,
+    };
 
     // const visited = new Set();
     // let result: NullArray<string> = [];
@@ -85,13 +98,16 @@ export const cursorPagination = (): Resolver => {
 };
 
 export const createUrqlClient = (ssrExchange: any) => ({
-  url: "http://localhost:4000/graphql",
+  url: 'http://localhost:4003/graphql',
   fetchOptions: {
-    credentials: "include" as const,
+    credentials: 'include' as const,
   },
   exchanges: [
     dedupExchange,
     cacheExchange({
+      keys: {
+        PaginatedPost: () => null,
+      },
       resolvers: {
         Query: {
           posts: cursorPagination(),
